@@ -338,30 +338,38 @@ def analyze_image_with_ai(image_path, model="gpt-4o", prompt=None, max_size_mb=5
     if prompt is None:
         prompt = "Please analyze this image and describe what you see in detail."
     
-    # Check file size and resize if needed
-    file_size_mb = os.path.getsize(image_path) / (1024 * 1024)
-    
-    if file_size_mb > max_size_mb:
-        # Resize image to fit size limit
-        with Image.open(image_path) as img:
+    # Open image with PIL to handle any format
+    with Image.open(image_path) as img:
+        # Convert to RGB if necessary (handles BMP, RGBA, etc.)
+        if img.mode not in ('RGB', 'L'):
+            if img.mode == 'RGBA':
+                # Create a white background
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[3] if len(img.split()) > 3 else None)
+                img = background
+            else:
+                img = img.convert('RGB')
+        
+        # Check file size and resize if needed
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='JPEG', quality=95)
+        file_size_mb = len(img_byte_arr.getvalue()) / (1024 * 1024)
+        
+        if file_size_mb > max_size_mb:
             # Calculate resize ratio
             resize_ratio = (max_size_mb / file_size_mb) ** 0.5
             new_width = int(img.width * resize_ratio)
             new_height = int(img.height * resize_ratio)
             
             # Resize image
-            img_resized = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
             
-            # Convert to bytes
+            # Convert to bytes again
             img_byte_arr = io.BytesIO()
-            img_format = 'JPEG' if img.format in ['JPEG', 'JPG'] else 'PNG'
-            img_resized.save(img_byte_arr, format=img_format, quality=85)
-            img_byte_arr.seek(0)
-            
-            image_data = base64.b64encode(img_byte_arr.read()).decode()
-    else:
-        with open(image_path, "rb") as image_file:
-            image_data = base64.b64encode(image_file.read()).decode()
+            img.save(img_byte_arr, format='JPEG', quality=85)
+        
+        img_byte_arr.seek(0)
+        image_data = base64.b64encode(img_byte_arr.read()).decode()
     
     model = model.lower()
     
