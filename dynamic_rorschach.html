@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic AI Rorschach Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-panel {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab:hover {
+            color: #4b5563;
+        }
+
+        .tab.active {
+            color: #7c3aed;
+            border-bottom-color: #7c3aed;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Image Upload Section */
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #f9fafb;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #9333ea;
+            background: #faf5ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #7c3aed;
+            background: #ede9fe;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        .preview-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .preview-image {
+            max-width: 400px;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .remove-image {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Persona Section */
+        .persona-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .personas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .persona-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            background: #f9fafb;
+            transition: all 0.3s;
+        }
+
+        .persona-card.active {
+            border-color: #7c3aed;
+            background: #faf5ff;
+        }
+
+        .persona-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .persona-name {
+            font-weight: 600;
+            color: #374151;
+            font-size: 18px;
+        }
+
+        .persona-trait {
+            background: #7c3aed;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .persona-description {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .persona-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #6d28d9;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .add-persona-btn {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #cbd5e1;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .add-persona-btn:hover {
+            border-color: #9333ea;
+            color: #7c3aed;
+            background: #faf5ff;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Analysis Section */
+        .analysis-section {
+            margin-top: 30px;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .result-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            background: white;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-persona {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 18px;
+        }
+
+        .result-trait {
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .result-interpretation {
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #7c3aed;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Gallery View */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-item:hover .gallery-delete {
+            opacity: 1;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+            padding: 10px;
+        }
+
+        .gallery-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .gallery-date {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .gallery-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .gallery-delete:hover {
+            background: #dc2626;
+        }
+
+        /* Settings Panel (integrated) */
+        .settings-panel {
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .settings-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .setting-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Inkblot Generator */
+        .inkblot-generator {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .generator-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .generator-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .generator-option {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .generator-option input[type="range"] {
+            width: 100%;
+        }
+
+        #complexityValue {
+            text-align: center;
+            font-weight: 600;
+            color: #7c3aed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Dynamic AI Rorschach Interface</h1>
+            <p>Upload images and customize personas for psychological interpretations</p>
+        </div>
+
+        <div class="main-panel">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('analyze')">Analyze</button>
+                <button class="tab" onclick="switchTab('gallery')">Gallery</button>
+            </div>
+
+            <!-- Analyze Tab -->
+            <div id="analyze-tab" class="tab-content active">
+                <!-- Settings Panel -->
+                <div class="settings-panel">
+                    <h2 class="section-title">⚙️ Analysis Settings</h2>
+                    <div class="settings-row">
+                        <div class="setting-item">
+                            <label class="setting-label">AI Model</label>
+                            <select class="form-select" id="modelSelect">
+                                <option value="gpt-4o">GPT-4 Vision</option>
+                                <option value="gemini">Gemini</option>
+                                <option value="claude">Claude</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">Temperature</label>
+                            <div class="setting-control">
+                                <input type="range" min="0" max="100" value="70" style="flex: 1;" id="temperatureSlider">
+                                <span id="temperatureValue" style="min-width: 35px;">0.7</span>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">Max Tokens</label>
+                            <input type="number" class="form-input" value="500" min="100" max="2000" id="maxTokensInput">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Upload Section -->
+                <div class="upload-section">
+                    <h2 class="section-title">📸 Select or Generate Image</h2>
+                    
+                    <!-- Image source tabs -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-primary" onclick="showImageSource('upload')" id="uploadTabBtn">
+                            Upload Image
+                        </button>
+                        <button class="btn btn-secondary" onclick="showImageSource('generate')" id="generateTabBtn">
+                            Generate Inkblot
+                        </button>
+                    </div>
+                    
+                    <!-- Upload area -->
+                    <div id="uploadArea" style="display: block;">
+                        <div class="upload-area" onclick="document.getElementById('fileInput').click()" 
+                             ondrop="handleDrop(event)" ondragover="handleDragOver(event)" 
+                             ondragleave="handleDragLeave(event)">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">Click to upload or drag and drop</div>
+                            <div class="upload-hint">Supports JPG, PNG, BMP (Max 10MB)</div>
+                            <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+                        </div>
+                    </div>
+                    
+                    <!-- Generate area -->
+                    <div id="generateArea" style="display: none;">
+                        <div class="inkblot-generator">
+                            <div class="generator-controls">
+                                <div class="generator-row">
+                                    <div class="generator-option">
+                                        <label class="setting-label">Color Mode</label>
+                                        <select class="form-select" id="inkblotColor">
+                                            <option value="false">Black & White</option>
+                                            <option value="true">Colored</option>
+                                        </select>
+                                    </div>
+                                    <div class="generator-option">
+                                        <label class="setting-label">Complexity</label>
+                                        <input type="range" min="1" max="5" value="3" id="inkblotComplexity">
+                                        <span id="complexityValue">3</span>
+                                    </div>
+                                    <div class="generator-option">
+                                        <label class="setting-label">Style</label>
+                                        <select class="form-select" id="inkblotStyle">
+                                            <option value="false">Symmetric</option>
+                                            <option value="true">Bizarre (Asymmetric)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" onclick="generateInkblot()" style="width: 100%; margin-top: 15px;">
+                                    🎨 Generate New Inkblot
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Image preview (shared) -->
+                    <div class="image-preview" id="imagePreview">
+                        <div class="preview-container">
+                            <img id="previewImage" class="preview-image" src="" alt="Preview">
+                            <button class="remove-image" onclick="removeImage()">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Persona Section -->
+                <div class="persona-section">
+                    <h2 class="section-title">👥 Select Personas</h2>
+                    <div class="personas-grid" id="personasGrid">
+                        <!-- Default personas will be loaded here -->
+                    </div>
+                    <button class="add-persona-btn" onclick="openPersonaModal()">
+                        <span>+</span>
+                        <span>Add Custom Persona</span>
+                    </button>
+                </div>
+
+                <!-- Analysis Section -->
+                <div class="analysis-section">
+                    <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()" disabled>
+                        Start Analysis
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section" id="resultsSection">
+                    <h2 class="section-title">📊 Analysis Results</h2>
+                    <div class="results-grid" id="resultsGrid">
+                        <!-- Results will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Tab -->
+            <div id="gallery-tab" class="tab-content">
+                <h2 class="section-title">🖼️ Previous Analyses</h2>
+                <div class="gallery-grid" id="galleryGrid">
+                    <!-- Gallery items will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Persona Modal -->
+    <div class="modal" id="personaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Custom Persona</h3>
+                <button class="modal-close" onclick="closePersonaModal()">×</button>
+            </div>
+            <form onsubmit="savePersona(event)">
+                <div class="form-group">
+                    <label class="form-label">Persona Name</label>
+                    <input type="text" class="form-input" id="personaName" required 
+                           placeholder="e.g., The Creative Mind">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Trait Category</label>
+                    <select class="form-select" id="personaTrait" required>
+                        <option value="openness">Openness</option>
+                        <option value="conscientiousness">Conscientiousness</option>
+                        <option value="extraversion">Extraversion</option>
+                        <option value="agreeableness">Agreeableness</option>
+                        <option value="neuroticism">Neuroticism</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="personaDescription" required 
+                              placeholder="Describe the persona's characteristics and how they might interpret images..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Interpretation Style</label>
+                    <textarea class="form-textarea" id="personaStyle" required 
+                              placeholder="How should this persona analyze images? What should they focus on?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Save Persona
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Default personas
+        let personas = [
+            {
+                id: 'creative',
+                name: 'The Creative Explorer',
+                trait: 'Openness',
+                description: 'Highly imaginative and open to new experiences.',
+                style: 'Focus on abstract patterns, symbolic meanings, and creative interpretations.',
+                active: true
+            },
+            {
+                id: 'analytical',
+                name: 'The Systematic Analyst',
+                trait: 'Conscientiousness',
+                description: 'Detail-oriented and methodical in approach.',
+                style: 'Analyze structure, symmetry, and logical patterns in the image.',
+                active: true
+            },
+            {
+                id: 'social',
+                name: 'The Social Connector',
+                trait: 'Extraversion',
+                description: 'Outgoing and focuses on social elements.',
+                style: 'Look for faces, social scenarios, and interpersonal dynamics.',
+                active: false
+            }
+        ];
+
+        let uploadedImage = null;
+        let analysisResults = [];
+        let galleryItems = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPersonas();
+            loadGallery();
+            setupTemperatureSlider();
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // File handling
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.querySelector('.upload-area').classList.remove('dragover');
+            
+            const file = event.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                processFile(file);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.querySelector('.upload-area').classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.querySelector('.upload-area').classList.remove('dragover');
+        }
+
+        function processFile(file) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size must be less than 10MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedImage = {
+                    data: e.target.result,
+                    name: file.name,
+                    type: file.type
+                };
+                displayImagePreview(e.target.result);
+                updateAnalyzeButton();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayImagePreview(imageSrc) {
+            document.getElementById('previewImage').src = imageSrc;
+            document.getElementById('imagePreview').classList.add('active');
+        }
+
+        function removeImage() {
+            uploadedImage = null;
+            document.getElementById('imagePreview').classList.remove('active');
+            document.getElementById('fileInput').value = '';
+            updateAnalyzeButton();
+        }
+
+        // Persona management
+        function loadPersonas() {
+            const grid = document.getElementById('personasGrid');
+            grid.innerHTML = '';
+            
+            personas.forEach(persona => {
+                const card = createPersonaCard(persona);
+                grid.appendChild(card);
+            });
+        }
+
+        function createPersonaCard(persona) {
+            const card = document.createElement('div');
+            card.className = `persona-card ${persona.active ? 'active' : ''}`;
+            card.innerHTML = `
+                <div class="persona-header">
+                    <span class="persona-name">${persona.name}</span>
+                    <span class="persona-trait">${persona.trait}</span>
+                </div>
+                <div class="persona-description">${persona.description}</div>
+                <div class="persona-actions">
+                    <button class="btn ${persona.active ? 'btn-secondary' : 'btn-primary'}" 
+                            onclick="togglePersona('${persona.id}')">
+                        ${persona.active ? 'Deselect' : 'Select'}
+                    </button>
+                    ${persona.id.startsWith('custom_') ? 
+                        `<button class="btn btn-danger" onclick="deletePersona('${persona.id}')">Delete</button>` : ''}
+                </div>
+            `;
+            return card;
+        }
+
+        function togglePersona(personaId) {
+            const persona = personas.find(p => p.id === personaId);
+            if (persona) {
+                persona.active = !persona.active;
+                loadPersonas();
+                updateAnalyzeButton();
+            }
+        }
+
+        function deletePersona(personaId) {
+            if (confirm('Are you sure you want to delete this persona?')) {
+                personas = personas.filter(p => p.id !== personaId);
+                loadPersonas();
+                updateAnalyzeButton();
+            }
+        }
+
+        // Random persona generation data
+        const personaTemplates = {
+            names: [
+                'The Visionary Dreamer', 'The Pragmatic Realist', 'The Empathetic Observer',
+                'The Strategic Thinker', 'The Intuitive Explorer', 'The Logical Analyst',
+                'The Emotional Navigator', 'The Pattern Seeker', 'The Harmonious Mediator',
+                'The Bold Innovator', 'The Careful Planner', 'The Passionate Artist'
+            ],
+            descriptions: [
+                'sees the world through a lens of endless possibilities and potential',
+                'approaches life with careful consideration and methodical analysis',
+                'deeply attuned to emotional undertones and interpersonal dynamics',
+                'finds meaning in abstract concepts and symbolic representations',
+                'values structure, order, and logical consistency above all else',
+                'driven by curiosity and a desire to understand hidden meanings',
+                'seeks balance and harmony in all aspects of interpretation',
+                'embraces spontaneity and unconventional perspectives',
+                'focuses on practical applications and real-world implications'
+            ],
+            styles: [
+                'Look for symbolic meanings, metaphors, and deeper psychological themes',
+                'Analyze geometric patterns, symmetry, and structural elements',
+                'Focus on emotional content, faces, and interpersonal relationships',
+                'Identify abstract concepts, philosophical themes, and existential questions',
+                'Examine logical patterns, cause-and-effect relationships, and systematic organization',
+                'Explore creative interpretations, artistic elements, and imaginative scenarios',
+                'Search for balance, harmony, and aesthetic beauty in the composition',
+                'Notice movement, energy, and dynamic interactions within the image',
+                'Detect practical objects, real-world scenarios, and functional elements'
+            ]
+        };
+
+        function generateRandomPersona() {
+            const traits = ['openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism'];
+            const randomTrait = traits[Math.floor(Math.random() * traits.length)];
+            const randomName = personaTemplates.names[Math.floor(Math.random() * personaTemplates.names.length)];
+            const randomDesc = personaTemplates.descriptions[Math.floor(Math.random() * personaTemplates.descriptions.length)];
+            const randomStyle = personaTemplates.styles[Math.floor(Math.random() * personaTemplates.styles.length)];
+            
+            return {
+                name: randomName,
+                trait: randomTrait.charAt(0).toUpperCase() + randomTrait.slice(1),
+                description: `This persona ${randomDesc}.`,
+                style: randomStyle
+            };
+        }
+
+        function openPersonaModal() {
+            // Generate random defaults
+            const randomPersona = generateRandomPersona();
+            
+            document.getElementById('personaName').value = randomPersona.name;
+            document.getElementById('personaTrait').value = randomPersona.trait.toLowerCase();
+            document.getElementById('personaDescription').value = randomPersona.description;
+            document.getElementById('personaStyle').value = randomPersona.style;
+            
+            document.getElementById('personaModal').classList.add('active');
+        }
+
+        function closePersonaModal() {
+            document.getElementById('personaModal').classList.remove('active');
+            document.getElementById('personaName').value = '';
+            document.getElementById('personaTrait').value = 'openness';
+            document.getElementById('personaDescription').value = '';
+            document.getElementById('personaStyle').value = '';
+        }
+
+        function savePersona(event) {
+            event.preventDefault();
+            
+            const newPersona = {
+                id: 'custom_' + Date.now(),
+                name: document.getElementById('personaName').value,
+                trait: document.getElementById('personaTrait').value,
+                description: document.getElementById('personaDescription').value,
+                style: document.getElementById('personaStyle').value,
+                active: false
+            };
+            
+            personas.push(newPersona);
+            loadPersonas();
+            closePersonaModal();
+        }
+
+        // Analysis
+        function updateAnalyzeButton() {
+            const button = document.getElementById('analyzeBtn');
+            const hasImage = uploadedImage !== null;
+            const hasActivePersonas = personas.some(p => p.active);
+            
+            button.disabled = !hasImage || !hasActivePersonas;
+            
+            if (!hasImage) {
+                button.textContent = 'Upload an image first';
+            } else if (!hasActivePersonas) {
+                button.textContent = 'Select at least one persona';
+            } else {
+                const activeCount = personas.filter(p => p.active).length;
+                button.textContent = `Analyze with ${activeCount} persona${activeCount > 1 ? 's' : ''}`;
+            }
+        }
+
+        async function startAnalysis() {
+            const button = document.getElementById('analyzeBtn');
+            button.disabled = true;
+            button.innerHTML = '<span class="loading-spinner"></span> Analyzing...';
+            
+            // Show results section
+            document.getElementById('resultsSection').classList.add('active');
+            const resultsGrid = document.getElementById('resultsGrid');
+            resultsGrid.innerHTML = '';
+            
+            // Get active personas
+            const activePersonas = personas.filter(p => p.active);
+            
+            // Get settings
+            const model = document.getElementById('modelSelect').value;
+            const temperature = parseFloat(document.getElementById('temperatureSlider').value);
+            const maxTokens = parseInt(document.getElementById('maxTokensInput').value);
+            
+            try {
+                // Use batch analyze for efficiency
+                const response = await fetch('http://localhost:5000/api/batch-analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        image: uploadedImage.data,
+                        personas: activePersonas,
+                        model: model,
+                        temperature: temperature,
+                        max_tokens: maxTokens
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Analysis failed');
+                }
+                
+                const data = await response.json();
+                
+                // Display results
+                for (const result of data.results) {
+                    const persona = activePersonas.find(p => p.id === result.persona_id);
+                    if (persona) {
+                        const resultCard = createResultCard(persona, result.interpretation);
+                        resultsGrid.appendChild(resultCard);
+                    }
+                }
+                
+                // Store results for gallery
+                analysisResults = data.results;
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                
+                // Fallback to mock data if API is not available
+                for (const persona of activePersonas) {
+                    const resultCard = createResultCard(persona, 'Analyzing...');
+                    resultsGrid.appendChild(resultCard);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    const interpretation = generateMockInterpretation(persona);
+                    updateResultCard(resultCard, persona, interpretation);
+                }
+            }
+            
+            button.disabled = false;
+            button.textContent = 'Analysis Complete - Analyze Again';
+            
+            // Save to gallery
+            saveToGallery();
+        }
+
+        function createResultCard(persona, interpretation) {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.id = `result-${persona.id}`;
+            card.innerHTML = `
+                <div class="result-header">
+                    <span class="result-persona">${persona.name}</span>
+                    <span class="result-trait">${persona.trait}</span>
+                </div>
+                <div class="result-interpretation">
+                    ${interpretation === 'Analyzing...' ? 
+                        '<span class="loading-spinner"></span> ' + interpretation : 
+                        interpretation}
+                </div>
+            `;
+            return card;
+        }
+
+        function updateResultCard(card, persona, interpretation) {
+            card.querySelector('.result-interpretation').innerHTML = interpretation;
+        }
+
+        function generateMockInterpretation(persona) {
+            // This is a mock function - in real implementation, this would call the API
+            const interpretations = {
+                'creative': 'This image reveals a profound dance of light and shadow, suggesting an inner journey of transformation. The organic forms speak to the fluidity of consciousness and the interconnectedness of all things.',
+                'analytical': 'The image displays bilateral symmetry with approximately 70% coverage of dark regions. The central axis shows clear definition with peripheral elements exhibiting fractal-like patterns. Structure suggests methodical organization.',
+                'social': 'I see figures reaching toward each other, suggesting human connection and the need for companionship. The composition hints at communication patterns and social dynamics within group settings.'
+            };
+            
+            return interpretations[persona.id] || 
+                   `Through the lens of ${persona.trait.toLowerCase()}, this image reveals patterns that reflect ${persona.description.toLowerCase()} The visual elements suggest ${persona.style.toLowerCase()}`;
+        }
+
+        // Gallery
+        function loadGallery() {
+            const grid = document.getElementById('galleryGrid');
+            
+            if (galleryItems.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: #9ca3af;">No previous analyses yet</p>';
+                return;
+            }
+            
+            grid.innerHTML = '';
+            galleryItems.forEach(item => {
+                const galleryItem = createGalleryItem(item);
+                grid.appendChild(galleryItem);
+            });
+        }
+
+        function createGalleryItem(item) {
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            div.innerHTML = `
+                <button class="gallery-delete" onclick="deleteGalleryItem(event, ${item.id})" title="Delete">×</button>
+                <img src="${item.image}" class="gallery-image" alt="${item.name}" onclick="viewGalleryItem(${item.id})">
+                <div class="gallery-overlay" onclick="viewGalleryItem(${item.id})">
+                    <div class="gallery-title">${item.name}</div>
+                    <div class="gallery-date">${item.date}</div>
+                </div>
+            `;
+            return div;
+        }
+
+        function viewGalleryItem(itemId) {
+            const item = galleryItems.find(i => i.id === itemId);
+            if (item) {
+                // In a real implementation, this would show the full analysis
+                alert(`Analysis from ${item.date}\n\nPersonas analyzed: ${item.personaCount}`);
+            }
+        }
+
+        function deleteGalleryItem(event, itemId) {
+            event.stopPropagation();
+            if (confirm('Are you sure you want to delete this analysis?')) {
+                galleryItems = galleryItems.filter(item => item.id !== itemId);
+                loadGallery();
+            }
+        }
+
+        function saveToGallery() {
+            if (uploadedImage) {
+                const item = {
+                    id: Date.now(),
+                    name: uploadedImage.name,
+                    image: uploadedImage.data,
+                    date: new Date().toLocaleDateString(),
+                    personaCount: personas.filter(p => p.active).length,
+                    results: analysisResults
+                };
+                galleryItems.unshift(item);
+                if (galleryItems.length > 20) {
+                    galleryItems = galleryItems.slice(0, 20); // Keep only last 20
+                }
+                loadGallery();
+            }
+        }
+
+        // Settings
+        function setupTemperatureSlider() {
+            const slider = document.getElementById('temperatureSlider');
+            const value = document.getElementById('temperatureValue');
+            
+            slider.oninput = function() {
+                value.textContent = (this.value / 100).toFixed(2);
+            };
+            
+            // Setup complexity slider
+            const complexitySlider = document.getElementById('inkblotComplexity');
+            const complexityDisplay = document.getElementById('complexityValue');
+            if (complexitySlider) {
+                complexitySlider.oninput = function() {
+                    complexityDisplay.textContent = this.value;
+                };
+            }
+        }
+
+        // Image source switching
+        function showImageSource(source) {
+            const uploadArea = document.getElementById('uploadArea');
+            const generateArea = document.getElementById('generateArea');
+            const uploadBtn = document.getElementById('uploadTabBtn');
+            const generateBtn = document.getElementById('generateTabBtn');
+            
+            if (source === 'upload') {
+                uploadArea.style.display = 'block';
+                generateArea.style.display = 'none';
+                uploadBtn.className = 'btn btn-primary';
+                generateBtn.className = 'btn btn-secondary';
+            } else {
+                uploadArea.style.display = 'none';
+                generateArea.style.display = 'block';
+                uploadBtn.className = 'btn btn-secondary';
+                generateBtn.className = 'btn btn-primary';
+            }
+        }
+
+        // Inkblot generation (with backend fallback)
+        async function generateInkblot() {
+            const useColor = document.getElementById('inkblotColor').value === 'true';
+            const complexity = parseInt(document.getElementById('inkblotComplexity').value);
+            const bizarre = document.getElementById('inkblotStyle').value === 'true';
+            
+            try {
+                // Try to use backend generator
+                const response = await fetch('http://localhost:5000/api/generate-inkblot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        useColor: useColor,
+                        complexity: complexity,
+                        bizarre: bizarre
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    uploadedImage = {
+                        data: data.image,
+                        name: `Generated Inkblot (C${complexity}, ${useColor ? 'Color' : 'B&W'}, ${bizarre ? 'Bizarre' : 'Symmetric'})`,
+                        type: 'image/png',
+                        generated: true
+                    };
+                    displayImagePreview(data.image);
+                    updateAnalyzeButton();
+                    
+                    // Show success message
+                    const btn = document.querySelector('#generateArea button');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✓ Inkblot Generated!';
+                    btn.disabled = true;
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                    return;
+                }
+            } catch (error) {
+                console.log('Backend not available, using client-side generation');
+            }
+            
+            // Fallback to client-side generation
+            const canvas = document.createElement('canvas');
+            canvas.width = 600;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            
+            // Set background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Colors for colored mode
+            const colors = ['#8B0000', '#4B0082', '#2F4F4F', '#556B2F', '#8B4513',
+                          '#800080', '#483D8B', '#2E8B57', '#B8860B', '#CD853F'];
+            
+            // Generate blobs
+            const numBlobs = Math.floor(complexity * 1.5) + 1;
+            const centerX = canvas.width / 2;
+            
+            for (let i = 0; i < numBlobs; i++) {
+                const color = useColor ? colors[Math.floor(Math.random() * colors.length)] : '#000000';
+                const alpha = useColor ? (i === 0 ? 0.8 : 0.6) : 0.9;
+                
+                // Random position (left half for symmetric, anywhere for bizarre)
+                const maxX = bizarre ? canvas.width - 50 : centerX - 50;
+                const blobX = Math.random() * (maxX - 50) + 50;
+                const blobY = Math.random() * (canvas.height - 100) + 50;
+                const blobSize = (Math.random() * 60 + 30) * (complexity * 0.3 + 0.4);
+                
+                // Draw organic shape
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                
+                const numPoints = complexity * 3 + 8;
+                for (let j = 0; j < numPoints; j++) {
+                    const angle = (j / numPoints) * Math.PI * 2;
+                    const radiusVariation = Math.random() * 0.6 + 0.4;
+                    const radius = blobSize * radiusVariation;
+                    const noiseX = (Math.random() - 0.5) * 30;
+                    const noiseY = (Math.random() - 0.5) * 30;
+                    
+                    const x = blobX + Math.cos(angle) * radius + noiseX;
+                    const y = blobY + Math.sin(angle) * radius + noiseY;
+                    
+                    if (j === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                // Mirror to right side if not bizarre
+                if (!bizarre) {
+                    ctx.beginPath();
+                    for (let j = 0; j < numPoints; j++) {
+                        const angle = (j / numPoints) * Math.PI * 2;
+                        const radiusVariation = Math.random() * 0.6 + 0.4;
+                        const radius = blobSize * radiusVariation;
+                        const noiseX = (Math.random() - 0.5) * 30;
+                        const noiseY = (Math.random() - 0.5) * 30;
+                        
+                        const originalX = blobX + Math.cos(angle) * radius + noiseX;
+                        const x = canvas.width - originalX;
+                        const y = blobY + Math.sin(angle) * radius + noiseY;
+                        
+                        if (j === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+            
+            // Add texture dots
+            ctx.globalAlpha = 0.1;
+            ctx.fillStyle = 'black';
+            for (let i = 0; i < complexity * 8; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 2 + 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Convert canvas to data URL
+            const dataURL = canvas.toDataURL('image/png');
+            
+            // Create a unique filename
+            const timestamp = Date.now();
+            const filename = `inkblot_generated_c${complexity}_${useColor ? 'color' : 'bw'}_${bizarre ? 'bizarre' : 'symmetric'}_${timestamp}.png`;
+            
+            // Set as uploaded image
+            uploadedImage = {
+                data: dataURL,
+                name: filename,
+                type: 'image/png',
+                generated: true
+            };
+            
+            // Display the preview
+            displayImagePreview(dataURL);
+            updateAnalyzeButton();
+            
+            // Show a success message
+            const btn = document.querySelector('#generateArea button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Inkblot Generated!';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

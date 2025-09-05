@@ -46,30 +46,50 @@ For the pilot, we sample a **small, diverse subset** (e.g. 15–20 images per so
 
 ## Experimental Design
 
-### Personas (Big Five Personality Traits)
-We define **five distinct AI personas**, each emphasizing one dominant Big Five trait:
+### Personas (Big Five Personality Traits - BFI-2 Framework)
+We define **ten distinct AI personas** using the BFI-2 (Big Five Inventory-2) framework, with both high and low expressions for each trait:
 
-1. **Openness** (High) - "The Creative Explorer"
+#### Openness to Experience
+1. **High Openness** - "The Creative Explorer"
    - Imaginative, artistic, curious, abstract thinking
    - Sees patterns, metaphors, and novel connections
-   
-2. **Conscientiousness** (High) - "The Systematic Analyst"  
+2. **Low Openness** - "The Practical Observer"
+   - Practical, conventional, concrete thinking
+   - Focuses on literal, straightforward interpretations
+
+#### Conscientiousness
+3. **High Conscientiousness** - "The Systematic Analyst"  
    - Organized, detail-oriented, methodical
    - Focuses on structure, symmetry, and categorization
-   
-3. **Extraversion** (High) - "The Social Interpreter"
+4. **Low Conscientiousness** - "The Spontaneous Observer"
+   - Disorganized, careless, spontaneous
+   - Provides casual, impressionistic observations
+
+#### Extraversion
+5. **High Extraversion** - "The Social Interpreter"
    - Energetic, social, action-oriented
    - Sees movement, interaction, and social scenarios
-   
-4. **Agreeableness** (High) - "The Harmonious Observer"
+6. **Low Extraversion** - "The Quiet Contemplator"
+   - Reserved, quiet, solitary
+   - Focuses on stillness, calm, and introspection
+
+#### Agreeableness
+7. **High Agreeableness** - "The Harmonious Observer"
    - Cooperative, trusting, empathetic
    - Interprets positive, peaceful, and collaborative themes
-   
-5. **Neuroticism** (High) - "The Anxious Perceiver"
+8. **Low Agreeableness** - "The Critical Analyst"
+   - Competitive, skeptical, critical
+   - Notices conflict, competition, and negative aspects
+
+#### Neuroticism
+9. **High Neuroticism** - "The Anxious Perceiver"
    - Emotionally reactive, threat-sensitive
    - Notices potential dangers, conflicts, or negative elements
+10. **Low Neuroticism** - "The Calm Observer"
+    - Emotionally stable, resilient, calm
+    - Sees balanced, stable, and harmonious elements
 
-Each persona is implemented by **steering multimodal models** using prompt-based personality frames combined with systematic instruction sets.
+Each persona is implemented using **BFI-2 item descriptions** that combine all relevant trait indicators into comprehensive personality prompts.
 
 ### Procedure
 1. **Input**: Each persona is shown the same ambiguous image.  
@@ -95,8 +115,9 @@ Each persona is implemented by **steering multimodal models** using prompt-based
   - Color/grayscale options
   - Complexity levels (1-5)
   
-- **`personas.py`**: Big Five personality trait definitions
-  - 5 distinct personas with detailed prompts
+- **`personas.py`**: Big Five personality trait definitions using BFI-2 framework
+  - 10 distinct personas (5 traits × high/low expressions)
+  - BFI-2 item-based personality descriptions
   - Systematic interpretation instructions
   - Metadata formatting for responses
   
@@ -105,6 +126,13 @@ Each persona is implemented by **steering multimodal models** using prompt-based
   - Parallel processing (5x faster)
   - Automatic retry with exponential backoff
   - Image selection from all three datasets
+  
+- **`enhanced_experiment.py`**: Interactive experimental runner with high/low personas
+  - Interactive HTML with hover effects showing persona prompts
+  - Click to toggle between high/low trait expressions
+  - Supports all 10 personas (high and low for each Big Five trait)
+  - Parallel processing with up to 10 workers
+  - Visual indicators for trait levels
 
 ### Advanced Modules (Future Development)
 - **`experiment.py`**: Full experimental framework with detailed logging
@@ -112,7 +140,38 @@ Each persona is implemented by **steering multimodal models** using prompt-based
 
 ### Running the Experiment
 
-#### Quick Start
+#### Dynamic Web Interface (NEW)
+```bash
+# Start the Flask backend server
+python app.py
+
+# Access the interface at http://localhost:5000
+```
+
+**Features:**
+- Upload custom images or generate inkblots in-browser
+- Create and edit custom personas with Big Five traits
+- Random persona generator for quick experiments
+- Real-time API integration with GPT-4, Gemini, Claude
+- Gallery with image history and deletion capability
+- Integrated settings panel (model, temperature, max tokens)
+- Both backend (Python) and client-side (JavaScript) inkblot generation
+
+**Interface Components:**
+- **`dynamic_rorschach.html`**: Full-featured web interface
+  - Drag-and-drop image upload
+  - In-browser inkblot generator
+  - Persona management with random defaults
+  - Real-time analysis with multiple AI models
+  - Gallery for viewing previous analyses
+  
+- **`app.py`**: Flask backend server
+  - RESTful API endpoints for analysis
+  - Batch processing for multiple personas
+  - Inkblot generation endpoint
+  - Integration with existing portal.py models
+
+#### Simple Experiment (5 high traits only)
 ```bash
 # Run with default settings (parallel, GPT-4o)
 python simple_experiment.py
@@ -127,12 +186,34 @@ python simple_experiment.py --model gemini
 python simple_experiment.py --workers 3
 ```
 
+#### Enhanced Experiment (10 personas with high/low traits)
+```bash
+# Run enhanced experiment with interactive features
+python enhanced_experiment.py
+
+# With custom settings
+python enhanced_experiment.py --model gemini --temperature 0.8
+
+# Adjust parallel workers (default 10)
+python enhanced_experiment.py --workers 15
+```
+
 #### Output Format
-The experiment generates an HTML file (`rorschach_results_[timestamp].html`) containing:
+
+**Simple Experiment** (`rorschach_results_[timestamp].html`):
 - 9 images (3 fractals, 3 art.pics, 3 generated inkblots)
-- 5 personality interpretations per image
+- 5 personality interpretations per image (high traits only)
 - Visual table format for easy comparison
 - Total of 45 interpretations in one view
+
+**Enhanced Experiment** (`rorschach_enhanced_[timestamp].html`):
+- 9 images (3 fractals, 3 art.pics, 3 generated inkblots)
+- 10 personas (5 traits × 2 levels each)
+- Interactive features:
+  - Hover to see BFI-2 based persona prompts
+  - Click cells to toggle between high/low trait expressions
+  - Toggle all cells for a trait at once
+- Total of 90 interpretations (accessible via toggling)
 
 ### Key Features
 - **Robustness**: Automatic retry logic handles API failures
